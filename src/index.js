@@ -2,39 +2,40 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+
+// Create unique key for react to use in lists
 const generateKey = (pre) => {
     return `${ pre }_${ new Date().getTime() }`;
 }
 
+// Initialize with a few players
 var playersList = [];
-playersList.push({id: generateKey("alex"), name: "alex", position: "cutter", assists: 0});
-playersList.push({id: generateKey("ahna"), name: "ahna", position: "cutter", assists: 0});
-playersList.push({id: generateKey("ben"), name: "ben", position: "cutter", assists: 0});
+playersList.push({id: generateKey("alex"), name: "alex", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
+playersList.push({id: generateKey("ahna"), name: "ahna", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
+playersList.push({id: generateKey("ben"), name: "ben", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
 
 class PlayersListItem extends React.Component {
 
-    // constructor(props) {
-    //     super(props);
-    
-    //     // Define the initial state:
-    //     this.state = {
-    //       assists: props.player.assists,
-    //     };
-    // }
-
-    // onAssistClick(e) {
-    //     this.props.addAssist();
-    // }
-
     render() {
-
         return (
             <ul key={this.props.player.id}>
                 <li>{this.props.player.name}</li>
                 <li>{this.props.player.position}</li>
                 <li>{this.props.player.assists}</li>
                 <li>
-                    <button onClick={ this.props.addAssist.bind(this, this.props.player) } >Add Assist </button>
+                    <button onClick={ this.props.increment.bind(this, this.props.player, "assists") } >Add Assist </button>
+                </li>
+                <li>{this.props.player.goals}</li>
+                <li>
+                    <button onClick={ this.props.increment.bind(this, this.props.player, "goals") } >Add Goal </button>
+                </li>
+                <li>{this.props.player.turns}</li>
+                <li>
+                    <button onClick={ this.props.increment.bind(this, this.props.player, "turns") } >Add Turn </button>
+                </li>
+                <li>{this.props.player.dees}</li>
+                <li>
+                    <button onClick={ this.props.increment.bind(this, this.props.player, "dees") } >Add Dee </button>
                 </li>
                 <li>
                     <button onClick={ this.props.removePlayer.bind(this, this.props.player) } >Remove Player</button>
@@ -54,7 +55,7 @@ class PlayerList extends React.Component {
                     key={item.id}
                     player={item}
                     removePlayer={this.props.removePlayer}
-                    addAssist={this.props.addAssist}
+                    increment={this.props.increment}
                 />
             )
         });
@@ -84,7 +85,7 @@ class Main extends React.Component {
     }
 
     // Add player function
-    addPlayer(e){
+    addPlayer(e) {
         e.preventDefault();
 
         // Create an object to represent our new player
@@ -92,7 +93,15 @@ class Main extends React.Component {
         let position = this.newPlayerPosition.value;
         let newId = generateKey(name);
 
-        const newPlayer = {id: newId, name: name, position: position};
+        const newPlayer = {
+            id: newId, 
+            name: name, 
+            position: position, 
+            assists: 0, 
+            goals: 0, 
+            turns: 0, 
+            dees: 0
+        };
 
         // Update state with new playersList, including new player
         this.setState({
@@ -103,24 +112,21 @@ class Main extends React.Component {
         this.addForm.reset();
     }
 
-    addAssist = (playerToGetAssist) => {
-
+    // Increment the number of assists a player has
+    increment = (playerToIncrement, statToIncrement) => {
         const newPlayersList = this.state.playersList.map(item => {
-            if (item.id === playerToGetAssist.id){
-                item.assists++;
+            if (item.id === playerToIncrement.id){
+                item[statToIncrement]++;
                 return item;
             }
             return item;
         }
         );
-        console.log("yep", newPlayersList);
-
-
+        console.log(newPlayersList)
         // Always update state through this.setState
         this.setState({
             playersList: newPlayersList
         });
-
     }
 
 
@@ -153,7 +159,7 @@ class Main extends React.Component {
                 < PlayerList 
                     list={this.state.playersList}
                     removePlayer={this.removePlayer}
-                    addAssist={this.addAssist}
+                    increment={this.increment}
                 />
 
                 <h2>Number of players: {this.state.playersList.length}</h2>
