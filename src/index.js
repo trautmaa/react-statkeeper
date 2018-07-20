@@ -5,40 +5,58 @@ import './index.css';
 
 // Create unique key for react to use in lists
 const generateKey = (pre) => {
-    return `${ pre }_${ new Date().getTime() }`;
+    return `${pre}_${new Date().getTime()}`;
 }
 
 // Initialize with a few players
 var playersList = [];
-playersList.push({id: generateKey("alex"), name: "alex", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
-playersList.push({id: generateKey("ahna"), name: "ahna", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
-playersList.push({id: generateKey("ben"), name: "ben", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0});
+playersList.push({ id: generateKey("alex"), name: "alex", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0, in: false, seconds: 4 });
+playersList.push({ id: generateKey("ahna"), name: "ahna", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0, in: false, seconds: 0 });
+playersList.push({ id: generateKey("ben"), name: "ben", position: "cutter", assists: 0, goals: 0, turns: 0, dees: 0, in: false, seconds: 143 });
 
 class PlayersListItem extends React.Component {
 
+    getSeconds() {
+        return ("0" + this.props.player.seconds % 60).slice(-2);
+    }
+
+    getMinutes() {
+        return Math.floor(this.props.player.seconds / 60);
+    }
+
     render() {
+        var ulClass = this.props.player.in ? "in" : "out";
         return (
-            <ul key={this.props.player.id}>
+            <ul key={this.props.player.id} className= {ulClass} >
                 <li>{this.props.player.name}</li>
                 <li>{this.props.player.position}</li>
-                <li>{this.props.player.assists}</li>
                 <li>
-                    <button onClick={ this.props.increment.bind(this, this.props.player, "assists") } >Add Assist </button>
-                </li>
-                <li>{this.props.player.goals}</li>
-                <li>
-                    <button onClick={ this.props.increment.bind(this, this.props.player, "goals") } >Add Goal </button>
-                </li>
-                <li>{this.props.player.turns}</li>
-                <li>
-                    <button onClick={ this.props.increment.bind(this, this.props.player, "turns") } >Add Turn </button>
-                </li>
-                <li>{this.props.player.dees}</li>
-                <li>
-                    <button onClick={ this.props.increment.bind(this, this.props.player, "dees") } >Add Dee </button>
+                    <button onClick={this.props.increment.bind(this, this.props.player, "assists")} >
+                        {this.props.player.assists}
+                    </button>
                 </li>
                 <li>
-                    <button onClick={ this.props.removePlayer.bind(this, this.props.player) } >Remove Player</button>
+                    <button onClick={this.props.increment.bind(this, this.props.player, "goals")} >
+                        {this.props.player.goals}
+                    </button>
+                </li>
+                <li>
+                    <button onClick={this.props.increment.bind(this, this.props.player, "turns")} >
+                        {this.props.player.turns}
+                    </button>
+                </li>
+                <li>
+                    <button onClick={this.props.increment.bind(this, this.props.player, "dees")} >
+                        {this.props.player.dees}
+                    </button>
+                </li>
+                <li>
+                    <button onClick={this.props.toggleWatch.bind(this, this.props.player)} >
+                        {this.getMinutes()}:{this.getSeconds()}
+                    </button>
+                </li>
+                <li>
+                    <button onClick={this.props.removePlayer.bind(this, this.props.player)} >Remove Player</button>
                 </li>
             </ul>
         )
@@ -49,20 +67,22 @@ class PlayersListItem extends React.Component {
 class PlayerList extends React.Component {
 
     render() {
-        const playersListItems = this.props.list.map( item => {
+        const playersListItems = this.props.list.map(item => {
             return (
-                < PlayersListItem 
+                < PlayersListItem
                     key={item.id}
                     player={item}
                     removePlayer={this.props.removePlayer}
                     increment={this.props.increment}
+                    toggle={this.props.toggle}
+                    toggleWatch={this.props.toggleWatch}
                 />
             )
         });
 
         return (
             <div>
-                { playersListItems }
+                {playersListItems}
             </div>
         )
     }
@@ -71,7 +91,7 @@ class PlayerList extends React.Component {
 class Controls extends React.Component {
     render() {
         return (
-            <div>These are the controls.</div>
+            <div></div>
         )
     }
 }
@@ -94,13 +114,15 @@ class Main extends React.Component {
         let newId = generateKey(name);
 
         const newPlayer = {
-            id: newId, 
-            name: name, 
-            position: position, 
-            assists: 0, 
-            goals: 0, 
-            turns: 0, 
-            dees: 0
+            id: newId,
+            name: name,
+            position: position,
+            assists: 0,
+            goals: 0,
+            turns: 0,
+            dees: 0,
+            in: false,
+            seconds: 0,
         };
 
         // Update state with new playersList, including new player
@@ -112,23 +134,86 @@ class Main extends React.Component {
         this.addForm.reset();
     }
 
-    // Increment the number of assists a player has
+    // Increment value for a player
     increment = (playerToIncrement, statToIncrement) => {
         const newPlayersList = this.state.playersList.map(item => {
-            if (item.id === playerToIncrement.id){
+            if (item.id === playerToIncrement.id) {
                 item[statToIncrement]++;
                 return item;
             }
             return item;
         }
         );
-        console.log(newPlayersList)
         // Always update state through this.setState
         this.setState({
             playersList: newPlayersList
         });
     }
 
+    // Toggle time on and off
+    toggleWatch = (playerToToggle) => {
+
+        var _this = this;
+        let player = this.state.playersList.filter( player => player.id === playerToToggle.id )[0];
+        let playerIsIn = player.in;
+
+        if (!playerIsIn) {
+            player.in = "true";
+            player.incrementer = setInterval(function () {
+                const newPlayersList = _this.state.playersList.map(item => {
+                    if (item.id === playerToToggle.id) {
+                            item.seconds = playerToToggle.seconds + 1;
+                        return item;
+                    }
+                    return item;
+                });
+                _this.setState({
+                    playersList: newPlayersList
+                });
+            }, 1000);
+        }
+        else {
+            const newPlayersList = _this.state.playersList.map(item => {
+                if (item.id === playerToToggle.id) {
+                        item.in = false;
+                        clearInterval( item.incrementer );
+                    return item;
+                }
+                return item;
+            });
+
+            _this.setState({
+                playersList: newPlayersList
+            });
+
+        }
+    
+
+        // If player is "in": stop
+
+
+        // If player is not "in": start
+        
+        // Always update state through this.setState
+
+       
+    }
+
+
+    // Toggle value for a player
+    toggle = (playerToToggle, statToToggle) => {
+        const newPlayersList = this.state.playersList.map(item => {
+            if (item.id === playerToToggle.id) {
+                item[statToToggle] = !playerToToggle[statToToggle];
+                return item;
+            }
+            return item;
+        });
+        // Always update state through this.setState
+        this.setState({
+            playersList: newPlayersList
+        });
+    }
 
     // Remove a player from the list
     removePlayer = (playerToRemove) => {
@@ -150,16 +235,28 @@ class Main extends React.Component {
                 <h1>Ultimate Stat Keeper</h1>
                 < Controls />
 
-                <form ref={input => this.addForm = input } className="form-inline" onSubmit={(e) => {this.addPlayer(e)}}>
-                    <input ref={input => this.newPlayerName = input } type="text" placeholder="Player" />
-                    <input ref={input => this.newPlayerPosition = input } type="text" placeholder="Position" />
+                <form ref={input => this.addForm = input} className="form-inline" onSubmit={(e) => { this.addPlayer(e) }}>
+                    <input ref={input => this.newPlayerName = input} type="text" placeholder="Player" />
+                    <input ref={input => this.newPlayerPosition = input} type="text" placeholder="Position" />
                     <button type="submit">Add</button>
                 </form>
 
-                < PlayerList 
+                <ul className="font-bold">
+                    <li>Name</li>
+                    <li>Position</li>
+                    <li>Assists</li>
+                    <li>Goals</li>
+                    <li>Turns</li>
+                    <li>Dees</li>
+                    <li>Playing Time</li>
+                </ul>
+
+                < PlayerList
                     list={this.state.playersList}
                     removePlayer={this.removePlayer}
                     increment={this.increment}
+                    toggle={this.toggle}
+                    toggleWatch={this.toggleWatch}
                 />
 
                 <h2>Number of players: {this.state.playersList.length}</h2>
