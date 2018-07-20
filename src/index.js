@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import '../node_modules/font-awesome/css/font-awesome.min.css'; 
 
 
 // Create unique key for react to use in lists
@@ -30,33 +31,23 @@ class PlayersListItem extends React.Component {
             <ul key={this.props.player.id} className= {ulClass} >
                 <li>{this.props.player.name}</li>
                 <li>{this.props.player.position}</li>
-                <li>
-                    <button onClick={this.props.increment.bind(this, this.props.player, "assists")} >
-                        {this.props.player.assists}
-                    </button>
+                <li onClick={this.props.increment.bind(this, this.props.player, "assists")} >
+                    {this.props.player.assists}
                 </li>
-                <li>
-                    <button onClick={this.props.increment.bind(this, this.props.player, "goals")} >
-                        {this.props.player.goals}
-                    </button>
+                <li onClick={this.props.increment.bind(this, this.props.player, "goals")} >
+                    {this.props.player.goals}
                 </li>
-                <li>
-                    <button onClick={this.props.increment.bind(this, this.props.player, "turns")} >
-                        {this.props.player.turns}
-                    </button>
+                <li onClick={this.props.increment.bind(this, this.props.player, "turns")} >
+                    {this.props.player.turns}
                 </li>
-                <li>
-                    <button onClick={this.props.increment.bind(this, this.props.player, "dees")} >
-                        {this.props.player.dees}
-                    </button>
+                <li onClick={this.props.increment.bind(this, this.props.player, "dees")}>
+                    {this.props.player.dees}
                 </li>
-                <li>
-                    <button onClick={this.props.toggleWatch.bind(this, this.props.player)} >
-                        {this.getMinutes()}:{this.getSeconds()}
-                    </button>
+                <li onClick={this.props.toggleWatch.bind(this, this.props.player)}>
+                    {this.getMinutes()}:{this.getSeconds()}
                 </li>
-                <li>
-                    <button onClick={this.props.removePlayer.bind(this, this.props.player)} >Remove Player</button>
+                <li onClick={this.props.removePlayer.bind(this, this.props.player)} >
+                    <i className="fa fa-trash"></i>
                 </li>
             </ul>
         )
@@ -81,7 +72,16 @@ class PlayerList extends React.Component {
         });
 
         return (
-            <div>
+            <div className="table">
+                <ul className="top-row">
+                    <li>Name</li>
+                    <li>Position</li>
+                    <li>Assists</li>
+                    <li>Goals</li>
+                    <li>Turns</li>
+                    <li>Dees</li>
+                    <li>Playing Time</li>
+                </ul>
                 {playersListItems}
             </div>
         )
@@ -238,18 +238,8 @@ class Main extends React.Component {
                 <form ref={input => this.addForm = input} className="form-inline" onSubmit={(e) => { this.addPlayer(e) }}>
                     <input ref={input => this.newPlayerName = input} type="text" placeholder="Player" />
                     <input ref={input => this.newPlayerPosition = input} type="text" placeholder="Position" />
-                    <button type="submit">Add</button>
+                    <button type="submit"><i className="fa fa-plus"></i></button>
                 </form>
-
-                <ul className="font-bold">
-                    <li>Name</li>
-                    <li>Position</li>
-                    <li>Assists</li>
-                    <li>Goals</li>
-                    <li>Turns</li>
-                    <li>Dees</li>
-                    <li>Playing Time</li>
-                </ul>
 
                 < PlayerList
                     list={this.state.playersList}
@@ -259,7 +249,6 @@ class Main extends React.Component {
                     toggleWatch={this.toggleWatch}
                 />
 
-                <h2>Number of players: {this.state.playersList.length}</h2>
             </div>
         );
     }
